@@ -112,133 +112,133 @@ import Data.Char
 
 
 -- Game of Life
--- cls :: IO ()
--- cls = putStr "\ESC[2J"
---
--- type Pos = (Int,Int)
---
--- writeat :: Pos -> String -> IO ()
--- writeat p xs = do
---     goto p
---     putStr xs
---
--- goto :: Pos -> IO ()
--- goto (x,y) = putStr ("\ESC[" ++ show y ++ ";" ++ show x ++ "H")
---
--- width :: Int
--- width = 10
--- height :: Int
--- height = 10
---
--- type Board = [Pos]
---
--- glider :: Board
--- glider = [(4,2),(2,3),(4,3),(3,4),(4,4)]
---
--- showcells :: Board -> IO ()
--- showcells b = sequence_ [writeat p "0" | p <- b]
---
--- isAlive :: Board -> Pos -> Bool
--- isAlive b p = elem p b
---
--- isEmpty :: Board -> Pos -> Bool
--- isEmpty b p = not (isAlive b p)
---
--- neighbs :: Pos -> [Pos]
--- neighbs (x,y) = map wrap [(x-1,y-1),(x,y-1),
---                           (x+1,y-1),(x-1,y),
---                           (x+1,y),(x-1,y+1),
---                           (x,y+1),(x+1,y+1)]
---
--- wrap :: Pos -> Pos
--- wrap (x,y) = (((x-1) `mod` width) +1,
---               ((y-1) `mod` height) +1)
---
--- liveneighbs :: Board -> Pos -> Int
--- liveneighbs b = length . filter (isAlive b) . neighbs
---
--- survivors :: Board -> [Pos]
--- survivors b = [p | p <- b, elem (liveneighbs b p) [2,3]]
---
--- births :: Board -> [Pos]
--- births b = [p | p <- rmdups (concat (map neighbs b)),
---                 isEmpty b p,
---                 liveneighbs b p == 3]
---
--- rmdups :: Eq a => [a] -> [a]
--- rmdups [] = []
--- rmdups (x:xs) = x : rmdups (filter (/=x) xs)
---
--- nextgen :: Board -> Board
--- nextgen b = survivors b ++ births b
---
--- life :: Board -> IO ()
--- life b = do
---     cls
---     showcells b
---     wait 5000000
---     life (nextgen b)
---
--- wait :: Int -> IO ()
--- wait n = sequence_ [return () | _ <- [1..n]]
+cls :: IO ()
+cls = putStr "\ESC[2J"
 
--- 1
-putStr' :: String -> IO ()
-putStr' s = sequence_ [putChar x | x <- s]
+type Pos = (Int,Int)
 
--- 2
-type Board = [Int]
+writeat :: Pos -> String -> IO ()
+writeat p xs = do
+    goto p
+    putStr xs
 
-putRow :: Int -> Int -> IO ()
-putRow row num = do
-    putStr (show row)
-    putStr ": "
-    putStrLn (concat (replicate num "* "))
+goto :: Pos -> IO ()
+goto (x,y) = putStr ("\ESC[" ++ show y ++ ";" ++ show x ++ "H")
 
-putBoard :: Board -> IO ()
-putBoard = putBoard_rec 1
+width :: Int
+width = 10
+height :: Int
+height = 10
 
-putBoard_rec r [] = return ()
-putBoard_rec r (n:ns) = do
-    putRow r n
-    putBoard_rec (r+1) ns
+type Board = [Pos]
 
--- 3
-putBoard' :: Board -> IO ()
-putBoard' b = sequence_ [putRow r n | (r, n)  <- zip [1..] b]
+glider :: Board
+glider = [(4,2),(2,3),(4,3),(3,4),(4,4)]
 
--- 4
+showcells :: Board -> IO ()
+showcells b = sequence_ [writeat p "0" | p <- b]
 
-getDigit :: IO Int
-getDigit = do
-    x <- getChar
-    putStrLn ""
-    if isDigit x then
-        return (digitToInt x)
-    else do
-        putStrLn "ERROR: Invalid digit"
-        getDigit
+isAlive :: Board -> Pos -> Bool
+isAlive b p = elem p b
 
-getSum :: Int -> IO Int
-getSum 0 = return 0
-getSum n = do
-    x <- getDigit
-    rest <- getSum (n-1)
-    return (x + rest)
+isEmpty :: Board -> Pos -> Bool
+isEmpty b p = not (isAlive b p)
 
-adder :: IO ()
-adder = do
-    putStr "How many numbers? "
-    n <- getDigit
-    total <- getSum n
-    putStrLn ("The total is " ++ show total)
+neighbs :: Pos -> [Pos]
+neighbs (x,y) = map wrap [(x-1,y-1),(x,y-1),
+                          (x+1,y-1),(x-1,y),
+                          (x+1,y),(x-1,y+1),
+                          (x,y+1),(x+1,y+1)]
 
--- 5
-adder' :: IO ()
-adder' = do
-    putStr "How many numbers? "
-    n <- getDigit
-    values <- sequence [getDigit | counter <- [1..n]]
-    putStrLn ("The total is " ++ show (sum values))
+wrap :: Pos -> Pos
+wrap (x,y) = (((x-1) `mod` width) +1,
+              ((y-1) `mod` height) +1)
 
--- 6 meeeh
+liveneighbs :: Board -> Pos -> Int
+liveneighbs b = length . filter (isAlive b) . neighbs
+
+survivors :: Board -> [Pos]
+survivors b = [p | p <- b, elem (liveneighbs b p) [2,3]]
+
+births :: Board -> [Pos]
+births b = [p | p <- rmdups (concat (map neighbs b)),
+                isEmpty b p,
+                liveneighbs b p == 3]
+
+rmdups :: Eq a => [a] -> [a]
+rmdups [] = []
+rmdups (x:xs) = x : rmdups (filter (/=x) xs)
+
+nextgen :: Board -> Board
+nextgen b = survivors b ++ births b
+
+life :: Board -> IO ()
+life b = do
+    cls
+    showcells b
+    wait 5000000
+    life (nextgen b)
+
+wait :: Int -> IO ()
+wait n = sequence_ [return () | _ <- [1..n]]
+
+-- -- 1
+-- putStr' :: String -> IO ()
+-- putStr' s = sequence_ [putChar x | x <- s]
+--
+-- -- 2
+-- type Board = [Int]
+--
+-- putRow :: Int -> Int -> IO ()
+-- putRow row num = do
+--     putStr (show row)
+--     putStr ": "
+--     putStrLn (concat (replicate num "* "))
+--
+-- putBoard :: Board -> IO ()
+-- putBoard = putBoard_rec 1
+--
+-- putBoard_rec r [] = return ()
+-- putBoard_rec r (n:ns) = do
+--     putRow r n
+--     putBoard_rec (r+1) ns
+--
+-- -- 3
+-- putBoard' :: Board -> IO ()
+-- putBoard' b = sequence_ [putRow r n | (r, n)  <- zip [1..] b]
+--
+-- -- 4
+--
+-- getDigit :: IO Int
+-- getDigit = do
+--     x <- getChar
+--     putStrLn ""
+--     if isDigit x then
+--         return (digitToInt x)
+--     else do
+--         putStrLn "ERROR: Invalid digit"
+--         getDigit
+--
+-- getSum :: Int -> IO Int
+-- getSum 0 = return 0
+-- getSum n = do
+--     x <- getDigit
+--     rest <- getSum (n-1)
+--     return (x + rest)
+--
+-- adder :: IO ()
+-- adder = do
+--     putStr "How many numbers? "
+--     n <- getDigit
+--     total <- getSum n
+--     putStrLn ("The total is " ++ show total)
+--
+-- -- 5
+-- adder' :: IO ()
+-- adder' = do
+--     putStr "How many numbers? "
+--     n <- getDigit
+--     values <- sequence [getDigit | counter <- [1..n]]
+--     putStrLn ("The total is " ++ show (sum values))
+--
+-- -- 6 meeeh

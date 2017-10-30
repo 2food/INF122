@@ -1,7 +1,6 @@
-import Data.Char
-import Data.List
-import System.IO
-import System.Random
+import           Data.Char
+import           Data.List
+import           System.IO
 
 size :: Int
 size = 3
@@ -19,7 +18,7 @@ empty :: Grid
 empty = replicate size (replicate size B)
 
 full :: Grid -> Bool
-full = all (/=B) . concat
+full = notElem B . concat
 
 turn :: Grid -> Player
 turn g = if os <= xs then O else X
@@ -58,20 +57,19 @@ showPlayer B = ["   "]
 showPlayer X = [" X "]
 
 interleave :: a -> [a] -> [a]
-interleave c []     = []
-interleave x [y]    = [y]
+interleave _ []     = []
+interleave _ [y]    = [y]
 interleave x (y:ys) = y : x : interleave x ys
 
 valid :: Grid -> Int -> Bool
 valid g i = 0 <= i && i < size^2 && concat g !! i == B
 
 move :: Grid -> Int -> Player -> [Grid]
-move g i p = if valid g i
-    then [chop size (xs ++ [p] ++ ys)] else []
+move g i p = [chop size (xs ++ [p] ++ ys) | valid g i]
     where (xs,B:ys) = splitAt i (concat g)
 
 chop :: Int -> [a] -> [[a]]
-chop n [] = []
+chop _ [] = []
 chop n xs = take n xs : chop n (drop n xs)
 
 getNat :: String -> IO Int
